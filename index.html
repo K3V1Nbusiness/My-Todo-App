@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Todo App</title>
+
+    <style>
+        /* Reset and global styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            max-width: 500px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container input {
+            width: calc(50% - 10px);
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-container input:focus {
+            border-color: #007BFF;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .render-todo-container {
+            max-width: 600px;
+            margin: 5px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .render-todo-container div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .render-todo-container div:last-child {
+            border-bottom: none;
+        }
+
+        .todoTitle {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #333;
+        }
+
+        .todoDescription {
+            color: #666;
+            margin-right: auto;
+            padding-left: 10px;
+        }
+
+        .deleteTodoButton {
+            padding: 5px 10px;
+            font-size: 14px;
+            color: white;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .deleteTodoButton:hover {
+            background-color: #a71d2a;
+        }
+    </style>
+</head>
+
+<body>
+    <form class="form-container">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="description" placeholder="Description">
+        <button class="btn" type="submit">Add</button>
+    </form>
+    <div class="render-todo-container"></div>
+
+
+    <script>
+        const title = document.getElementById('title');
+        const description = document.getElementById('description');
+        const addButton = document.querySelector('.btn');
+        const renderTodoContainer = document.querySelector('.render-todo-container');
+
+        function getTodo() {
+            // Fetch data (method: GET)
+            fetch('http://localhost:3000/todos')
+                .then(response => response.json()) // .json() to parse JSON to obj.
+                .then((data) => {
+                    for (let i = 0; i < data.length; i++) {
+                        const row = document.createElement('div');
+                        const spanTitle = document.createElement('span');
+                        spanTitle.setAttribute('class', 'todoTitle');
+                        spanTitle.textContent = data[i].title;
+
+                        const spanDescription = document.createElement('span');
+                        spanDescription.setAttribute('class', 'todoDescription');
+                        spanDescription.textContent = data[i].description;
+
+                        const deleteTodoButton = document.createElement('button');
+                        deleteTodoButton.setAttribute('class', 'deleteTodoButton');
+                        deleteTodoButton.setAttribute('onclick', `deleteTodo(${data[i].id})`);
+                        deleteTodoButton.textContent = 'delete';
+
+                        row.appendChild(spanTitle);
+                        row.appendChild(spanDescription);
+                        row.appendChild(deleteTodoButton);
+                        renderTodoContainer.appendChild(row);
+                    }
+                })
+                .catch(error => console.error('Error:', error)); // Handle errors
+
+        }
+getTodo();
+        function addTodo() {
+            // Fetch data (method: POST)
+            fetch('http://localhost:3000/todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: title.value,
+                    description: description.value
+                })
+            })
+                .then(resp => resp.json())
+                .then(data => console.log(data))
+                .catch(err => console.error('Error: ', err));
+        }
+
+        function deleteTodo(id) {
+            // Fetch data (method: POST)
+            fetch(`http://localhost:3000/todos/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(resp => resp.json())
+                .then(data => {
+                    location.reload();
+                    console.log(data);
+
+                })
+                .catch(err => console.error('Error: ', err));
+        }
+
+
+        addButton.addEventListener('click', () => {
+            if (title.value !== '' & description.value !== '') {
+                addTodo();
+            } else {
+                console.log('Please Enter some value');
+            }
+        });
+    </script>
+</body>
+
+</html>
